@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.рус
+.idea/
+desktop.ini
+queue_message.json
