@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-QUEUE_CHANNEL_ID = 1468929245987340474  # канал с очередью
-THREAD_CHANNEL_ID = 1468888559560687717  # канал для веток
+QUEUE_CHANNEL_ID = 1184854010071613490  # канал с очередью
+THREAD_CHANNEL_ID = 1083875631781138552  # канал для веток
 DATA_FILE = "queue_message.json"
 
 intents = nextcord.Intents.default()
@@ -85,7 +85,7 @@ class QueueView(View):
 
     @nextcord.ui.button(label="Я стажер", style=nextcord.ButtonStyle.green)
     async def trainee(self, button: Button, interaction: nextcord.Interaction):
-        REQUIRED_ROLE_ID = 1468931190378467369
+        REQUIRED_ROLE_ID = 964079933863362570
         # Проверяем, есть ли у пользователя нужная роль
         role = interaction.guild.get_role(REQUIRED_ROLE_ID)
         if not role:
@@ -106,8 +106,8 @@ class QueueView(View):
 
     @nextcord.ui.button(label="Я наставник", style=nextcord.ButtonStyle.primary)
     async def mentor(self, button: Button, interaction: nextcord.Interaction):
-        ROLE_ID_1 = 1468931225157632173
-        ROLE_ID_2 = 1468932534355103785
+        ROLE_ID_1 = 1174738465401884692
+        ROLE_ID_2 = 1434215165678587914
 
         # Получаем роли из сервера
         role1 = interaction.guild.get_role(ROLE_ID_1)
