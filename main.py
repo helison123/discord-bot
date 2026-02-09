@@ -147,37 +147,6 @@ class QueueView(View):
 
     @nextcord.ui.button(label="Взять стажёра", style=nextcord.ButtonStyle.secondary)
     async def take_trainee(self, button: Button, interaction: nextcord.Interaction):
-        ROLE_ID_1 = 1174738465401884692
-        ROLE_ID_2 = 1434215165678587914
-
-        # Получаем роли из сервера
-        role1 = interaction.guild.get_role(ROLE_ID_1)
-        role2 = interaction.guild.get_role(ROLE_ID_2)
-
-        if not role1 and not role2:
-            await interaction.response.send_message("❌ Ошибка: роли не найдены. Обратитесь к администратору.",
-                                                    ephemeral=True)
-            return
-
-        # Проверяем, есть ли у пользователя хотя бы одна из этих ролей
-        has_role = False
-        role_names = []
-
-        if role1 and role1 in interaction.user.roles:
-            has_role = True
-            role_names.append(role1.name)
-
-        if role2 and role2 in interaction.user.roles:
-            has_role = True
-            role_names.append(role2.name)
-
-        if not has_role:
-            allowed_roles = " или ".join([f"**{r.name}**" for r in [role1, role2] if r])
-            await interaction.response.send_message(
-                f"Вы не можете использовать эту кнопку — нужна роль: {allowed_roles}.",
-                ephemeral=True
-            )
-            return
         if not trainees:
             await interaction.response.send_message("Нет стажеров в очереди!", ephemeral=True)
             return
