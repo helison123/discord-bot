@@ -147,8 +147,8 @@ class QueueView(View):
 
     @nextcord.ui.button(label="Взять стажёра", style=nextcord.ButtonStyle.secondary)
     async def take_trainee(self, button: Button, interaction: nextcord.Interaction):
-        ROLE_ID_1 = 1468931225157632173
-        ROLE_ID_2 = 1468932534355103785
+        ROLE_ID_1 = 1174738465401884692
+        ROLE_ID_2 = 1434215165678587914
 
         # Получаем роли из сервера
         role1 = interaction.guild.get_role(ROLE_ID_1)
