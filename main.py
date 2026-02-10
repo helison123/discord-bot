@@ -16,6 +16,7 @@ DATA_FILE = "queue_message.json"
 intents = nextcord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
+bot_started = False
 
 # Списки для хранения участников
 trainees = []  # стажеры
@@ -232,6 +233,13 @@ def load_queue_data():
 
 @bot.event
 async def on_ready():
+    global bot_started
+
+    if bot_started:
+        return
+
+    bot_started = True
+    
     print(f"Бот онлайн: {bot.user}")
 
     global trainees, mentors
@@ -257,12 +265,12 @@ async def on_ready():
     initial_embed = Embed(
         title="📋 Панель очереди для стажеров и их наставников",
         description="• Кнопки «Я стажер» и «Я наставник» доступны только соответствующим ролям.\n"
-                   "• «Взять стажёра» — откроет меню выбора конкретного стажёра.\n"
+                   "• «Взять стажёра» — забираете первого в очереди стажера.\n"
                    "• Автокик: заявки старше 3 часов удаляются автоматически.",
         colour=Colour.blue()
     )
-    initial_embed.add_field(name="🎓 Стажеры", value="—", inline=True)
-    initial_embed.add_field(name="🏫 Наставники", value="—", inline=True)
+    initial_embed.add_field(name="👶 Стажеры", value="—", inline=True)
+    initial_embed.add_field(name="👮‍♂️ Наставники", value="—", inline=True)
 
     message = await channel.send(embed=initial_embed, view=view)
     view.message = message
