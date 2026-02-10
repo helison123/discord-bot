@@ -6,11 +6,15 @@ from dotenv import load_dotenv
 import os
 from nextcord import Embed, Colour
 from datetime import datetime, timezone
+import asyncio
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 QUEUE_CHANNEL_ID = 1184854010071613490  # канал с очередью
 THREAD_CHANNEL_ID = 1083875631781138552  # канал для веток
+NOTIFY_CHANNEL_ID = 1115406954928558081  # Канал для уведомлений 
+MENTOR_ROLE_ID = 1174738465401884692    # Роль, которую нужно упоминать 
+TRAINING_WAIT_TIME = 3600               # 1 час
 DATA_FILE = "queue_message.json"
 
 intents = nextcord.Intents.default()
@@ -20,6 +24,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Списки для хранения участников
 trainees = []  # стажеры
 mentors = []   # наставники
+pending_notifications = {}  # Хранит задачи уведомлений: {user_id: asyncio.Task}
 
 class QueueView(View):
     def __init__(self):
@@ -82,6 +87,35 @@ class QueueView(View):
 
         # Лог в консоль
         print(f"Создана ветка: {mentor_user} ↔ {trainee_user}")
+
+        async def notify_mentors_after_wait(self, user: nextcord.Member, guild: nextcord.Guild):
+        while user.id in trainees:  # Пока стажёр в очереди
+            await asyncio.sleep(TRAINING_WAIT_TIME)  # Ждём заданное время (например, 5 минут)
+            if user.id not in trainees:  # Проверим ещё раз
+                break
+
+            channel = bot.get_channel(NOTIFY_CHANNEL_ID)
+            role = guild.get_role(MENTOR_ROLE_ID)
+
+            if channel and role:
+                # Считаем, сколько раз уже уведомляли (для статистики)
+                waited_minutes = TRAINING_WAIT_TIME // 60
+                await channel.send(
+                    f"⏰ Напоминание: стажёр всё ещё в очереди — "
+                    f"{role.mention}, может, возьмете бедолагу? Уже ждёт **{waited_minutes}+ минут**."
+                )
+
+    # ✅ Методы удаления — тоже внутри
+    def remove_trainee(self, user_id: int):
+        if user_id in trainees:
+            trainees.remove(user_id)
+        if user_id in pending_notifications:
+            task = pending_notifications.pop(user_id)
+            task.cancel()
+
+    def remove_mentor(self, user_id: int):
+        if user_id in mentors:
+            mentors.remove(user_id)
 
     @nextcord.ui.button(label="Я стажер", style=nextcord.ButtonStyle.green)
     async def trainee(self, button: Button, interaction: nextcord.Interaction):
