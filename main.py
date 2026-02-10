@@ -21,6 +21,8 @@ trainees = []  # стажеры
 mentors = []   # наставники
 pending_notifications = {}  # Хранит задачи уведомлений: {user_id: asyncio.Task}
 
+bot = commands.Bot(command_prefix="!", intents=intents)
+
 class QueueView(View):
     def __init__(self):
         super().__init__(timeout=None)
