@@ -147,6 +147,37 @@ class QueueView(View):
 
     @nextcord.ui.button(label="Взять стажёра", style=nextcord.ButtonStyle.secondary)
     async def take_trainee(self, button: Button, interaction: nextcord.Interaction):
+        ROLE_ID_1 = 1174738465401884692
+        ROLE_ID_2 = 1434215165678587914
+
+        # Получаем роли из сервера
+        role1 = interaction.guild.get_role(ROLE_ID_1)
+        role2 = interaction.guild.get_role(ROLE_ID_2)
+
+        if not role1 and not role2:
+            await interaction.response.send_message("❌ Ошибка: роли не найдены. Обратитесь к администратору.",
+                                                    ephemeral=True)
+            return
+
+        # Проверяем, есть ли у пользователя хотя бы одна из этих ролей
+        has_role = False
+        role_names = []
+
+        if role1 and role1 in interaction.user.roles:
+            has_role = True
+            role_names.append(role1.name)
+
+        if role2 and role2 in interaction.user.roles:
+            has_role = True
+            role_names.append(role2.name)
+
+        if not has_role:
+            allowed_roles = " или ".join([f"**{r.name}**" for r in [role1, role2] if r])
+            await interaction.response.send_message(
+                f"Вы не можете использовать эту кнопку — нужна роль: {allowed_roles}.",
+                ephemeral=True
+            )
+            return
         if not trainees:
             await interaction.response.send_message("Нет стажеров в очереди!", ephemeral=True)
             return
@@ -198,71 +229,6 @@ def load_queue_data():
             data = json.load(f)
             return data["trainees"], data["mentors"]
     return [], []
-
-@bot.event
-async def on_ready():
-    print(f"Бот онлайн: {bot.user}")
-
-    global trainees, mentors
-    trainees, mentors = load_queue_data()
-
-    channel = bot.get_channel(QUEUE_CHANNEL_ID)
-    if not channel:
-        print("❌ Канал очереди не найден")
-        return
-
-    view = QueueView()
-    message_id = load_message_id()
-
-    if message_id:
-        try:
-            message = await channel.fetch_message(message_id)
-            view.message = message
-            await message.edit(view=view)
-            await view.update()
-            print("✅ Использую существующее сообщение очереди")
-            return
-        except nextcord.NotFound:
-            print("⚠️ Старое сообщение удалено")
-
-    initial_embed = Embed(
-        title="📋 Панель очереди для стажеров и их наставников",
-        description="• Кнопки «Я стажер» и «Я наставник» доступны только соответствующим ролям.\n"
-                   "• «Взять стажёра» — откроет меню выбора конкретного стажёра.\n"
-                   "• Автокик: заявки старше 3 часов удаляются автоматически.",
-        colour=Colour.blue()
-    )
-    initial_embed.add_field(name="🎓 Стажеры", value="—", inline=True)
-    initial_embed.add_field(name="🏫 Наставники", value="—", inline=True)
-
-    message = await channel.send(content="", embed=initial_embed, view=view)
-    view.message = message
-    save_message_id(message.id)
-    save_queue_data()
-    print("🆕 Создано новое сообщение очереди")
-
-@bot.event
-async def on_message(message):
-    # Логика автокика (удаление заявок старше 3 часов)
-    from datetime import datetime  # Импорт datetime внутри функции или в начале файла
-    now = datetime.now(timezone.utc)  # Сохраняем результат в переменную now
-    for user_id in trainees[:]:
-        # Здесь нужно добавить логику отслеживания времени добавления в очередь
-        # Например, хранить время добавления в отдельном словаре
-        pass
-    for user_id in mentors[:]:
-        # Аналогично для наставников
-        pass
-
-def save_message_id(message_id):
-    with open(DATA_FILE, "w") as f:
-        json.dump({"message_id": message_id}, f)
-
-def load_message_id():
-    if not os.path.exists(DATA_FILE):
-        return None
-    with open(DATA_FILE, "r") as f:
-        return json.load(f).get("message_id")
 
 @bot.event
 async def on_ready():
