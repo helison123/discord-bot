@@ -100,10 +100,6 @@ class QueueView(View):
             await interaction.response.send_message("Вы уже в списке стажеров!", ephemeral=True)
             return
         trainees.append(interaction.user.id)
-        # Запускаем уведомление через 5 минут
-        task = asyncio.create_task(self.notify_mentors_after_wait(interaction.user, interaction.guild))
-        pending_notifications[interaction.user.id] = task
-
         await interaction.response.send_message("Вы добавлены в список стажеров.", ephemeral=True)
         await self.update()
         await self.try_match(interaction.channel)
